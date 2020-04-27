@@ -30,7 +30,7 @@ const botBuilder = {
     });
   },
   production: (token) => {
-    const bot = new Bot(token);
+    const bot = new TelegramBot(token);
     bot.setWebHook(process.env.HEROKU_URL + bot.token);
     return bot;
   }
