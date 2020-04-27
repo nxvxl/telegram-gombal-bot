@@ -3,9 +3,13 @@ const TelegramBot = require('node-telegram-bot-api');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const { MongoClient } = require('mongodb');
+const express = require('express');
+const bodyParser = require('body-parser');
+const packageInfo = require('./package.json');
 
 /** Load environment variables from .env */
 dotenv.config();
+const token = process.env.TOKEN;
 
 /** Connect to database */
 const client = new MongoClient(process.env.MONGO_URI, {
@@ -19,11 +23,20 @@ const phrases = [
   ...JSON.parse(fs.readFileSync('./phrases.json'))
 ];
 
-
+const botBuilder = {
+  development: (token) => {
+    return new TelegramBot(token, {
+      polling: true
+    });
+  },
+  production: (token) => {
+    const bot = new Bot(token);
+    bot.setWebHook(process.env.HEROKU_URL + bot.token);
+    return bot;
+  }
+}
 /** Initiate telegram bot */
-const bot = new TelegramBot(process.env.TOKEN, {
-  polling: true
-});
+const bot = botBuilder[process.env.NODE_ENV](token)
 
 /** Reply for gombalin or /gombalin */
 bot.onText(/^\/?gombalin$/, (msg, match) => {
@@ -65,4 +78,25 @@ bot.on('message', msg => {
     .catch(err => {
       console.log({ err });
     });
+});
+
+/** Express */
+const app = express();
+
+app.use(bodyParser.json());
+
+app.get('/', (req, res) => {
+  res.json({
+    name: packageInfo.name,
+    version: packageInfo.version
+  });
+});
+
+app.post(`/${bot.token}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(`Web server listening on PORT ${process.env.PORT}`);
 });
