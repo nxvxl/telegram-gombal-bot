@@ -23,6 +23,8 @@ const phrases = [
   ...JSON.parse(fs.readFileSync('./phrases.json'))
 ];
 
+const randomWords = () => phrases[Math.floor(Math.random() * phrases.length)];
+
 const botBuilder = {
   development: (token) => {
     return new TelegramBot(token, {
@@ -39,19 +41,14 @@ const botBuilder = {
 const bot = botBuilder[process.env.NODE_ENV](token)
 
 /** Reply for gombalin or /gombalin */
-bot.onText(/^\/?gombalin$/, (msg, match) => {
-  const chatId = msg.chat.id;
-  const i = Math.floor(Math.random() * phrases.length);
-  const resp = phrases[i];
-  bot.sendMessage(chatId, resp);
+bot.onText(/^\/?gombalin$/, msg => {
+  bot.sendMessage(msg.chat.id, randomWords());
 })
 
 bot.onText(/^\/?gombalin\s([0-9]+)$/, (msg, match) => {
   const chatId = msg.chat.id;
   for (j = 0; j < match[1]; j++) {
-    const i = Math.floor(Math.random() * phrases.length);
-    const resp = phrases[i];
-    bot.sendMessage(chatId, resp);
+    bot.sendMessage(chatId, randomWords());
   }
 })
 
@@ -67,6 +64,19 @@ bot.onText(/^\/start$/, msg => {
     .catch(err => {
       bot.sendMessage(chatId, 'Something went wrong :(');
     })
+});
+
+/** Special */
+bot.onText(/^\/sayang$/, msg => {
+  const chatId = msg.chat.id;
+  console.log(typeof process.env.RECEIVER);
+  if (chatId === parseInt(process.env.SENDER)) {
+    bot.sendMessage(parseInt(process.env.RECEIVER), randomWords());
+    bot.sendMessage(chatId, 'message sent!');
+  } else {
+    console.log('error')
+    bot.sendMessage(chatId, 'Failed to send message');
+  }
 });
 
 bot.on('message', msg => {
