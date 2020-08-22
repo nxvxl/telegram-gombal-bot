@@ -5,7 +5,7 @@ let db;
 
 const token = process.env.TOKEN;
 
-connectDb().then(client => db = client)
+connectDb().then((client) => (db = client));
 
 /** load the words */
 const phrases = [
@@ -13,9 +13,7 @@ const phrases = [
   ...JSON.parse(fs.readFileSync('./phrases.json')),
 ];
 
-const jawa = [
-  ...JSON.parse(fs.readFileSync('./phrases/jawa.json'))
-]
+const jawa = [...JSON.parse(fs.readFileSync('./phrases/jawa.json'))];
 
 const randomWords = () => phrases[Math.floor(Math.random() * phrases.length)];
 
@@ -48,35 +46,35 @@ bot.onText(/^\/?gombalin\s([0-9]+)$/, (msg, match) => {
 
 bot.onText(/^\/start$/, async (msg) => {
   const chatId = msg.chat.id;
-    try {
-      const user = await db
-        .db('telegrambot')
-        .collection('user')
-        .findOne({ id: msg.from.id });
-      if (!user)
-        await db.db('telegrambot').collection('user').insertOne(msg.from);
-      bot.sendMessage(
-        chatId,
-        'Hello. Thanks for adding me!\nPlease write /gombalin to get love quote'
-      );
-    } catch(err)  {
-      bot.sendMessage(chatId, 'Something went wrong :(');
-    };
+  try {
+    const user = await db
+      .collection('user')
+      .findOne({ id: msg.from.id });
+    if (!user)
+      await db.collection('user').insertOne(msg.from);
+    bot.sendMessage(
+      chatId,
+      'Hello. Thanks for adding me!\nPlease write /gombalin to get love quote'
+    );
+  } catch (err) {
+    console.error({ err });
+    bot.sendMessage(chatId, 'Something went wrong :(');
+  }
 });
 
 bot.onText(/^\/jawa/, async (msg) => {
-  const phrase = jawa[Math.floor(Math.random() * jawa.length)]
-  console.log({ jawa, phrase})
-  bot.sendMessage(msg.chat.id, phrase)
+  const phrase = jawa[Math.floor(Math.random() * jawa.length)];
+  console.log({ jawa, phrase });
+  bot.sendMessage(msg.chat.id, phrase);
 });
 
 bot.on('message', async (msg) => {
-    try {
-      console.log({msg})
-      await db.collection('msg').insertOne(msg);
-    } catch(err) {
-      console.log({ err });
-    };
+  try {
+    console.log({ msg });
+    await db.collection('msg').insertOne(msg);
+  } catch (err) {
+    console.log({ err });
+  }
 });
 
 module.exports = bot;
