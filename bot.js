@@ -68,13 +68,13 @@ bot.onText(/^\/jawa/, async (msg) => {
   bot.sendMessage(msg.chat.id, phrase);
 });
 
-bot.on('message', async (msg) => {
-  try {
-    console.log({ msg });
-    await db.collection('msg').insertOne(msg);
-  } catch (err) {
-    console.log({ err });
-  }
-});
+// bot.on('message', async (msg) => {
+//   try {
+//     console.log({ msg });
+//     await db.collection('msg').insertOne(msg);
+//   } catch (err) {
+//     console.log({ err });
+//   }
+// });
 
 module.exports = bot;
